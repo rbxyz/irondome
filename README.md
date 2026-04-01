@@ -260,7 +260,9 @@ pnpm run build
 npm publish --access public
 ```
 
-Depois: `npx irondome@0.0.3 init` (ou `@latest` quando `latest` apontar para essa versão).
+Depois: `npx irondome@0.0.4 init` (ou `@latest` quando `latest` apontar para essa versão).
+
+Se `npm publish` falhar com **403** em *“cannot publish over the previously published versions”*, a versão já existe no registo — bumpa `version` em `apps/cli/package.json` e volta a publicar.
 
 ### Uso local sem npm
 

@@ -215,7 +215,7 @@ const program = new Command();
 program
   .name("irondome")
   .description("Scaffold Irondome em projetos Next.js")
-  .version("0.0.3");
+  .version("0.0.4");
 
 program
   .command("init")
