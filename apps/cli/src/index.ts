@@ -155,7 +155,7 @@ async function runInit(cwd: string, force: boolean): Promise<void> {
 
   await patchPackageJson(cwd, auth, features);
 
-  outro("Irondome configurado! Corre `pnpm install` e define JWT_SECRET no .env.");
+  outro("Irondome configurado! Roda `pnpm install` e define JWT_SECRET no .env.");
 }
 
 async function runAdd(feature: string, cwd: string, force: boolean) {
