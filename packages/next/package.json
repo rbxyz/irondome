@@ -1,0 +1,40 @@
+{
+  "name": "@irondome/next",
+  "version": "0.0.1",
+  "description": "Next.js App Router helpers for Irondome permissions",
+  "license": "MIT",
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup",
+    "check-types": "tsc --noEmit",
+    "lint": "eslint . --max-warnings 0"
+  },
+  "peerDependencies": {
+    "@irondome/auth": "workspace:*",
+    "@irondome/core": "workspace:*",
+    "next": "^14.0.0 || ^15.0.0 || ^16.0.0",
+    "react": "^18.0.0 || ^19.0.0"
+  },
+  "dependencies": {
+    "@irondome/auth": "workspace:*",
+    "@irondome/core": "workspace:*"
+  },
+  "devDependencies": {
+    "@repo/eslint-config": "workspace:*",
+    "@repo/typescript-config": "workspace:*",
+    "@types/react": "19.2.2",
+    "eslint": "^9.39.1",
+    "next": "16.2.0",
+    "react": "^19.2.0",
+    "tsup": "^8.5.1",
+    "typescript": "5.9.2"
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "name": "@irondome/core",
+  "version": "0.0.1",
+  "description": "Policy-based access control (PBAC) engine for Irondome",
+  "license": "MIT",
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup",
+    "check-types": "tsc --noEmit",
+    "lint": "eslint . --max-warnings 0",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "@repo/eslint-config": "workspace:*",
+    "@repo/typescript-config": "workspace:*",
+    "eslint": "^9.39.1",
+    "tsup": "^8.5.1",
+    "typescript": "5.9.2",
+    "vitest": "^3.2.4"
+  }
+}

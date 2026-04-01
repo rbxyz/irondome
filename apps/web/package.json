@@ -2,7 +2,7 @@
   "name": "web",
   "version": "0.1.0",
   "type": "module",
-  "private": true,
+  "private": false,
   "scripts": {
     "dev": "next dev --port 3000",
     "build": "next build",
@@ -11,6 +11,9 @@
     "check-types": "next typegen && tsc --noEmit"
   },
   "dependencies": {
+    "@irondome/auth": "workspace:*",
+    "@irondome/core": "workspace:*",
+    "@irondome/next": "workspace:*",
     "@repo/ui": "workspace:*",
     "next": "16.2.0",
     "react": "^19.2.0",

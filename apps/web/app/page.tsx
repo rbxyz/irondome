@@ -1,102 +1,53 @@
-import Image, { type ImageProps } from "next/image";
-import { Button } from "@repo/ui/button";
-import styles from "./page.module.css";
+import Link from "next/link";
+import { LoginForm } from "@/components/login-form";
+import { InvoiceDeleteDemo } from "@/components/invoice-delete-demo";
+import { getServerSubject } from "@/lib/irondome/server-subject";
 
-type Props = Omit<ImageProps, "src"> & {
-  srcLight: string;
-  srcDark: string;
-};
-
-const ThemeImage = (props: Props) => {
-  const { srcLight, srcDark, ...rest } = props;
+export default async function Home() {
+  const subject = await getServerSubject();
 
   return (
-    <>
-      <Image {...rest} src={srcLight} className="imgLight" />
-      <Image {...rest} src={srcDark} className="imgDark" />
-    </>
-  );
-};
+    <main style={{ maxWidth: 640, margin: "2rem auto", padding: "0 1rem", fontFamily: "system-ui, sans-serif" }}>
+      <h1 style={{ fontSize: "1.75rem", marginBottom: "0.25rem" }}>Irondome — demo</h1>
+      <p style={{ lineHeight: 1.5, color: "#555", marginBottom: "1.5rem" }}>
+        PBAC + auth próprio (bcrypt + JWT) + proteção de rotas via middleware.
+      </p>
 
-export default function Home() {
-  return (
-    <div className={styles.page}>
-      <main className={styles.main}>
-        <ThemeImage
-          className={styles.logo}
-          srcLight="turborepo-dark.svg"
-          srcDark="turborepo-light.svg"
-          alt="Turborepo logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol>
-          <li>
-            Get started by editing <code>apps/web/app/page.tsx</code>
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+      {subject ? (
+        <section style={{ background: "#f0fdf4", border: "1px solid #bbf7d0", borderRadius: 8, padding: "1rem", marginBottom: "1.5rem" }}>
+          <strong>Sessão ativa</strong>
+          <pre style={{ margin: "0.5rem 0 0", fontSize: "0.85rem" }}>
+            {JSON.stringify({ id: subject.id, roles: subject.roles, orgId: subject.orgId }, null, 2)}
+          </pre>
+        </section>
+      ) : (
+        <section style={{ marginBottom: "1.5rem" }}>
+          <h2 style={{ fontSize: "1.1rem" }}>Login</h2>
+          <p style={{ fontSize: "0.9rem", color: "#666" }}>
+            Contas demo: <code>admin@demo.com</code> / <code>admin123</code> ·{" "}
+            <code>member@demo.com</code> / <code>member123</code> ·{" "}
+            <code>viewer@demo.com</code> / <code>viewer123</code>
+          </p>
+          <LoginForm />
+        </section>
+      )}
 
-        <div className={styles.ctas}>
-          <a
-            className={styles.primary}
-            href="https://vercel.com/new/clone?demo-description=Learn+to+implement+a+monorepo+with+a+two+Next.js+sites+that+has+installed+three+local+packages.&demo-image=%2F%2Fimages.ctfassets.net%2Fe5382hct74si%2F4K8ZISWAzJ8X1504ca0zmC%2F0b21a1c6246add355e55816278ef54bc%2FBasic.png&demo-title=Monorepo+with+Turborepo&demo-url=https%3A%2F%2Fexamples-basic-web.vercel.sh%2F&from=templates&project-name=Monorepo+with+Turborepo&repository-name=monorepo-turborepo&repository-url=https%3A%2F%2Fgithub.com%2Fvercel%2Fturborepo%2Ftree%2Fmain%2Fexamples%2Fbasic&root-directory=apps%2Fdocs&skippable-integrations=1&teamSlug=vercel&utm_source=create-turbo"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className={styles.logo}
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            href="https://turborepo.dev/docs?utm_source"
-            target="_blank"
-            rel="noopener noreferrer"
-            className={styles.secondary}
-          >
-            Read our docs
-          </a>
-        </div>
-        <Button appName="web" className={styles.secondary}>
-          Open alert
-        </Button>
-      </main>
-      <footer className={styles.footer}>
-        <a
-          href="https://vercel.com/templates?search=turborepo&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          href="https://turborepo.dev?utm_source=create-turbo"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to turborepo.dev →
-        </a>
-      </footer>
-    </div>
+      <section style={{ marginBottom: "1.5rem" }}>
+        <h2 style={{ fontSize: "1.1rem" }}>Páginas protegidas por role</h2>
+        <ul style={{ paddingLeft: "1.25rem", lineHeight: 2 }}>
+          <li><Link href="/admin">/admin</Link> — só <code>admin</code></li>
+          <li><Link href="/dashboard">/dashboard</Link> — <code>admin</code> ou <code>member</code></li>
+          <li><Link href="/profile">/profile</Link> — qualquer autenticado</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2 style={{ fontSize: "1.1rem" }}>Ação protegida (API)</h2>
+        <p style={{ fontSize: "0.9rem", color: "#666" }}>
+          <code>DELETE /api/demo/invoice</code> — só <code>admin</code> pode apagar.
+        </p>
+        <InvoiceDeleteDemo />
+      </section>
+    </main>
   );
 }

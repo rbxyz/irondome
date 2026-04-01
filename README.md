@@ -1,159 +1,245 @@
-# Turborepo starter
+# Irondome
 
-This Turborepo starter is maintained by the Turborepo core team.
+> PBAC + ReBAC + auth próprio para Next.js — plug-and-play, sem magia negra.
 
-## Using this example
-
-Run the following command:
-
-```sh
-npx create-turbo@latest
+```bash
+npx irondome@latest init
 ```
 
-## What's inside?
+---
+> Quem decide o que cada pessoa pode fazer na sua aplicação — o código ou a política?
 
-This Turborepo includes the following packages/apps:
+## O que é?
 
-### Apps and Packages
+Irondome é um sistema de permissões moderno para projetos Next.js. Usa **Policy-Based Access Control (PBAC)** para proteger rotas, páginas, Server Actions e API routes — com o mesmo motor e as mesmas policies em toda a stack.
 
-- `docs`: a [Next.js](https://nextjs.org/) app
-- `web`: another [Next.js](https://nextjs.org/) app
-- `@repo/ui`: a stub React component library shared by both `web` and `docs` applications
-- `@repo/eslint-config`: `eslint` configurations (includes `eslint-config-next` and `eslint-config-prettier`)
-- `@repo/typescript-config`: `tsconfig.json`s used throughout the monorepo
+Inclui auth próprio (email + senha + JWT), adapters para NextAuth e Clerk, **ReBAC** para relações entre entidades (estilo Google Zanzibar) e um **Audit log** com hook configurável.
 
-Each package/app is 100% [TypeScript](https://www.typescriptlang.org/).
+---
 
-### Utilities
+## Pacotes
 
-This Turborepo has some additional tools already setup for you:
+| Pacote | Descrição |
+|--------|-----------|
+| [`@irondome/core`](./packages/core) | Motor PBAC, ReBAC, Audit — sem dependência de Next |
+| [`@irondome/auth`](./packages/auth) | bcrypt + JWT, adapters NextAuth/Clerk, schema Drizzle |
+| [`@irondome/next`](./packages/next) | Middleware de rotas, `usePermission`, tRPC helpers, Server Action wrapper |
+| [`irondome`](./apps/cli) | CLI: `irondome init`, `irondome add` |
 
-- [TypeScript](https://www.typescriptlang.org/) for static type checking
-- [ESLint](https://eslint.org/) for code linting
-- [Prettier](https://prettier.io) for code formatting
+---
 
-### Build
+## Início rápido
 
-To build all apps and packages, run the following command:
+### 1. Inicializar num projeto Next.js
 
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended):
-
-```sh
-cd my-turborepo
-turbo build
+```bash
+npx irondome@latest init
+# ou em projeto existente
+npx irondome@latest init --cwd ./meu-app
 ```
 
-Without global `turbo`, use your package manager:
+O CLI pergunta o provider de auth e as features pretendidas e gera os ficheiros necessários.
 
-```sh
-cd my-turborepo
-npx turbo build
-yarn dlx turbo build
-pnpm exec turbo build
+### 2. Instalar manualmente
+
+```bash
+pnpm add @irondome/core @irondome/auth @irondome/next
 ```
 
-You can build a specific package by using a [filter](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters):
+---
 
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed:
+## PBAC — Policies
 
-```sh
-turbo build --filter=docs
+```ts
+// lib/irondome/permissions.ts
+import { actions, createPermissions, hasRole, Roles, type Policy } from "@irondome/core";
+
+const pagePolicy: Policy = (subject, action, resource) => {
+  if (resource.type !== "page" || action !== actions.page.visit) return null;
+  if (resource.id.startsWith("/admin")) {
+    return hasRole(subject, Roles.admin)
+      ? { allowed: true, reason: "admin" }
+      : { allowed: false, reason: "apenas admin" };
+  }
+  return null;
+};
+
+export const { can, authorize } = createPermissions({ policies: [pagePolicy] });
 ```
 
-Without global `turbo`:
+### Middleware (proteção de rotas)
 
-```sh
-npx turbo build --filter=docs
-yarn exec turbo build --filter=docs
-pnpm exec turbo build --filter=docs
+```ts
+// middleware.ts
+import { createRoutePermissionMiddleware } from "@irondome/next";
+import { actions, pageResource } from "@irondome/core";
+import { verifyToken } from "@irondome/auth/jwt";
+import { can } from "./lib/irondome/permissions";
+
+export default createRoutePermissionMiddleware({
+  getSubject: async (req) => {
+    const token = /* extrair cookie */;
+    const payload = await verifyToken(token, process.env.JWT_SECRET!);
+    return payload ? { id: payload.sub, roles: payload.roles, orgId: payload.orgId } : null;
+  },
+  can,
+  publicPaths: ["/", "/api/auth/*"],
+  rules: [
+    { match: (p) => p.startsWith("/admin"), action: actions.page.visit, resource: (p) => pageResource(p) },
+  ],
+});
 ```
 
-### Develop
+### Hook React (client)
 
-To develop all apps and packages, run the following command:
+```tsx
+import { usePermission } from "@irondome/next";
+import { namedResource } from "@irondome/core";
 
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended):
-
-```sh
-cd my-turborepo
-turbo dev
+const { allowed } = usePermission(can, session.user, "resource:delete", namedResource("post", post.id));
+return allowed ? <DeleteButton /> : null;
 ```
 
-Without global `turbo`, use your package manager:
+---
 
-```sh
-cd my-turborepo
-npx turbo dev
-yarn exec turbo dev
-pnpm exec turbo dev
+## Auth próprio
+
+```ts
+// lib/irondome/own-auth.ts
+import { createOwnAuth } from "@irondome/auth";
+import { db } from "@/server/db";
+import { irondomeUsers } from "@irondome/auth/schema/pg";
+import { eq } from "drizzle-orm";
+
+export const ownAuth = createOwnAuth({
+  jwtSecret: process.env.JWT_SECRET!,
+  getUserByEmail: (email) =>
+    db.query.irondomeUsers.findFirst({ where: eq(irondomeUsers.email, email) }),
+});
 ```
 
-You can develop a specific package by using a [filter](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters):
+```ts
+// app/api/auth/signin/route.ts
+import { ownAuth } from "@/lib/irondome/own-auth";
+import { NextResponse } from "next/server";
 
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed:
+export async function POST(req: Request) {
+  const { email, password } = await req.json();
+  const result = await ownAuth.signIn(email, password);
+  if (!result.ok) return NextResponse.json({ error: "Credenciais inválidas" }, { status: 401 });
 
-```sh
-turbo dev --filter=web
+  const res = NextResponse.json({ ok: true });
+  res.cookies.set(ownAuth.cookieName, result.token, { httpOnly: true, sameSite: "lax" });
+  return res;
+}
 ```
 
-Without global `turbo`:
+### Adapters (NextAuth / Clerk)
 
-```sh
-npx turbo dev --filter=web
-yarn exec turbo dev --filter=web
-pnpm exec turbo dev --filter=web
+```ts
+import { nextAuthToSubject } from "@irondome/auth";
+const subject = nextAuthToSubject(session, { getRoles: (s) => s.user?.roles ?? ["user"] });
+
+import { clerkToSubject } from "@irondome/auth";
+const subject = clerkToSubject(await auth());
 ```
 
-### Remote Caching
+---
 
-> [!TIP]
-> Vercel Remote Cache is free for all plans. Get started today at [vercel.com](https://vercel.com/signup?utm_source=remote-cache-sdk&utm_campaign=free_remote_cache).
+## ReBAC
 
-Turborepo can use a technique known as [Remote Caching](https://turborepo.dev/docs/core-concepts/remote-caching) to share cache artifacts across machines, enabling you to share build caches with your team and CI/CD pipelines.
+```ts
+import { MemoryRelationStore, checkRelation } from "@irondome/core";
 
-By default, Turborepo will cache locally. To enable Remote Caching you will need an account with Vercel. If you don't have an account you can [create one](https://vercel.com/signup?utm_source=turborepo-examples), then enter the following commands:
+const store = new MemoryRelationStore();
+store.add(
+  { subject: "user:alice", relation: "member", object: "team:eng" },
+  { subject: "team:eng",   relation: "owner",  object: "repo:api" },
+);
 
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended):
-
-```sh
-cd my-turborepo
-turbo login
+// alice pode aceder a repo:api via cadeia member → owner?
+await checkRelation(store, "user:alice", "owner", "repo:api", { via: ["member"] });
+// → true
 ```
 
-Without global `turbo`, use your package manager:
+Em produção, implementa `RelationStore` com o teu ORM (Drizzle, Prisma…).
 
-```sh
-cd my-turborepo
-npx turbo login
-yarn exec turbo login
-pnpm exec turbo login
+---
+
+## Audit
+
+```ts
+import { createPermissions, createConsoleAuditHook } from "@irondome/core";
+
+const { can } = createPermissions({
+  policies,
+  audit: createConsoleAuditHook({ onlyDenied: false }),
+});
+// [irondome] ✗ user-123(member) resource:delete post:p1 — apenas admin
 ```
 
-This will authenticate the Turborepo CLI with your [Vercel account](https://vercel.com/docs/concepts/personal-accounts/overview).
+---
 
-Next, you can link your Turborepo to your Remote Cache by running the following command from the root of your Turborepo:
+## tRPC
 
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed:
+```ts
+// server/api/trpc.ts
+import { createIrondomeContext } from "@irondome/next";
+import { can } from "@/lib/irondome/permissions";
 
-```sh
-turbo link
+export const createTRPCContext = async () => {
+  const subject = await getServerSubject();
+  return { ...createIrondomeContext(can, subject) };
+};
+
+// procedures
+export const protectedProcedure = t.procedure.use(({ ctx, next }) => {
+  if (!ctx.subject) throw new TRPCError({ code: "UNAUTHORIZED" });
+  return next();
+});
 ```
 
-Without global `turbo`:
+```ts
+import { irondomePermission } from "@irondome/next";
+import { namedResource } from "@irondome/core";
 
-```sh
-npx turbo link
-yarn exec turbo link
-pnpm exec turbo link
+const canDelete = irondomePermission(can, "resource:delete", (input: { id: string }) =>
+  namedResource("post", input.id),
+);
+export const deletePost = protectedProcedure.use(canDelete).mutation(...);
 ```
 
-## Useful Links
+---
 
-Learn more about the power of Turborepo:
+## CLI
 
-- [Tasks](https://turborepo.dev/docs/crafting-your-repository/running-tasks)
-- [Caching](https://turborepo.dev/docs/crafting-your-repository/caching)
-- [Remote Caching](https://turborepo.dev/docs/core-concepts/remote-caching)
-- [Filtering](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters)
-- [Configuration Options](https://turborepo.dev/docs/reference/configuration)
-- [CLI Usage](https://turborepo.dev/docs/reference/command-line-reference)
+```bash
+npx irondome@latest init          # setup inicial
+npx irondome@latest add auth      # só os ficheiros de auth
+npx irondome@latest add rebac     # stub ReBAC
+npx irondome@latest add audit     # stub Audit
+```
+
+---
+
+## Schema Drizzle (PostgreSQL)
+
+```ts
+import { irondomeUsers } from "@irondome/auth/schema/pg";
+// Adiciona à tua migration e faz drizzle-kit push
+```
+
+---
+
+## Variáveis de ambiente
+
+```env
+JWT_SECRET=mínimo-32-chars-aleatórios
+DATABASE_URL=postgresql://user:pass@host/db
+```
+
+---
+
+## Licença
+
+MIT © rbxyz

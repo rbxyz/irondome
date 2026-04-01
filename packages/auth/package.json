@@ -1,0 +1,48 @@
+{
+  "name": "@irondome/auth",
+  "version": "0.0.1",
+  "description": "Authentication + Session adapters for Irondome",
+  "license": "MIT",
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./jwt": {
+      "types": "./dist/jwt.d.ts",
+      "import": "./dist/jwt.js"
+    },
+    "./schema/pg": {
+      "types": "./dist/schema/pg.d.ts",
+      "import": "./dist/schema/pg.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup",
+    "check-types": "tsc --noEmit",
+    "lint": "eslint . --max-warnings 0"
+  },
+  "dependencies": {
+    "@irondome/core": "workspace:*",
+    "bcryptjs": "^2.4.3",
+    "jose": "^5.10.0"
+  },
+  "peerDependencies": {
+    "drizzle-orm": ">=0.36.0"
+  },
+  "peerDependenciesMeta": {
+    "drizzle-orm": { "optional": true }
+  },
+  "devDependencies": {
+    "@repo/eslint-config": "workspace:*",
+    "@repo/typescript-config": "workspace:*",
+    "@types/bcryptjs": "^2.4.6",
+    "drizzle-orm": "^0.43.1",
+    "eslint": "^9.39.1",
+    "tsup": "^8.5.1",
+    "typescript": "5.9.2"
+  }
+}
