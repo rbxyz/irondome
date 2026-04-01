@@ -1,6 +1,6 @@
 {
   "name": "@irondome/next",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Next.js App Router helpers for Irondome permissions",
   "license": "MIT",
   "type": "module",

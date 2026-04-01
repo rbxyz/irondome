@@ -1,6 +1,6 @@
 {
   "name": "@irondome/core",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Policy-based access control (PBAC) engine for Irondome",
   "license": "MIT",
   "type": "module",
