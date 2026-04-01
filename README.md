@@ -15,6 +15,10 @@ Irondome é um sistema de permissões moderno para projetos Next.js. Usa **Polic
 
 Inclui auth próprio (email + senha + JWT), adapters para NextAuth e Clerk, **ReBAC** para relações entre entidades (estilo Google Zanzibar) e um **Audit log** com hook configurável.
 
+### Documentação detalhada (PBAC, ReBAC, Auth, Audit)
+
+- **[Guia dos quatro pilares](./docs/guia-dos-pilares.md)** — o quê, como e porquê de cada pilar, sub-tópicos para desenvolvimento e uso correto, fluxos recomendados e anti-padrões.
+
 ---
 
 ## Pacotes
