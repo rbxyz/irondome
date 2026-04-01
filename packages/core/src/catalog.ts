@@ -18,6 +18,11 @@ export const actions = {
   page: {
     visit: "page:visit",
   },
+  /** Painéis administrativos (políticas podem exigir {@link hasMinimumPosition}). */
+  panel: {
+    visit: "panel:visit",
+    manage: "panel:manage",
+  },
   resource: {
     create: "resource:create",
     read: "resource:read",

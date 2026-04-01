@@ -18,6 +18,7 @@ Inclui auth próprio (email + senha + JWT), adapters para NextAuth e Clerk, **Re
 ### Documentação detalhada (PBAC, ReBAC, Auth, Audit)
 
 - **[Guia dos quatro pilares](./docs/guia-dos-pilares.md)** — o quê, como e porquê de cada pilar, sub-tópicos para desenvolvimento e uso correto, fluxos recomendados e anti-padrões.
+- **[Publicar no npm](./docs/npm-publish.md)** — como publicar `@irondome/core`, `@irondome/auth`, `@irondome/next` e o CLI `irondome` sem incluir o monorepo inteiro.
 
 ---
 
@@ -240,6 +241,33 @@ import { irondomeUsers } from "@irondome/auth/schema/pg";
 ```env
 JWT_SECRET=mínimo-32-chars-aleatórios
 DATABASE_URL=postgresql://user:pass@host/db
+```
+
+---
+
+## Publicar o CLI no npm (`npx irondome`)
+
+O nome **`irondome`** no registo npm deve apontar **apenas** para `apps/cli` (tem `bin.irondome` → `dist/index.js`). A raiz do monorepo (`irondome-monorepo`) é **`private: true`** e **não** deve ser publicada.
+
+### Erro: `npm error could not determine executable to run`
+
+Isto acontece quando a versão instalada de `irondome` **não** inclui um `bin` (por exemplo, foi publicado por engano o `package.json` da raiz do monorepo). **Solução:** publicar uma versão nova do CLI:
+
+```bash
+cd apps/cli
+pnpm install
+pnpm run build
+npm publish --access public
+```
+
+Depois: `npx irondome@0.0.3 init` (ou `@latest` quando `latest` apontar para essa versão).
+
+### Uso local sem npm
+
+```bash
+pnpm --filter irondome exec node dist/index.js init --cwd /caminho/do/projeto
+# ou, na raiz do repo após build:
+node apps/cli/dist/index.js init
 ```
 
 ---

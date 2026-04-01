@@ -1,6 +1,6 @@
 {
   "name": "@irondome/auth",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Authentication + Session adapters for Irondome",
   "license": "MIT",
   "type": "module",
@@ -26,17 +26,21 @@
     "lint": "eslint . --max-warnings 0"
   },
   "dependencies": {
-    "@irondome/core": "workspace:*",
     "bcryptjs": "^2.4.3",
     "jose": "^5.10.0"
   },
+  "publishConfig": {
+    "access": "public"
+  },
   "peerDependencies": {
+    "@irondome/core": ">=0.0.2",
     "drizzle-orm": ">=0.36.0"
   },
   "peerDependenciesMeta": {
     "drizzle-orm": { "optional": true }
   },
   "devDependencies": {
+    "@irondome/core": "workspace:*",
     "@repo/eslint-config": "workspace:*",
     "@repo/typescript-config": "workspace:*",
     "@types/bcryptjs": "^2.4.6",

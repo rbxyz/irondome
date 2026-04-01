@@ -1,10 +1,9 @@
 {
-  "name": "irondome",
+  "name": "irondome-monorepo",
   "author": "rbxyz | the ironmaker",
   "license": "MIT",
-  "version": "0.0.1",
-  "description": "Policy-based access control (PBAC) engine for Irondome",
-  "private": false,
+  "description": "Monorepo de desenvolvimento — não publicar como pacote npm. O CLI publicável é apps/cli (nome: irondome).",
+  "private": true,
   "scripts": {
     "build": "turbo run build",
     "dev": "turbo run dev",

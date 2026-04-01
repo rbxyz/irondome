@@ -127,6 +127,32 @@ O **alvo** da ação.
 3. **Não** fazer I/O pesado dentro da policy (ideal: pura). Se precisares de dados extra, obtém **antes** e passa em `resource.attributes` ou `context`.
 4. **ReBAC** pode ser chamado **dentro** de uma policy quando a regra for “membro do grupo que é dono do repo” (ver [Pilar 3](#3-pilar-2--rebac-relation-based-access-control)).
 
+### 2.5.1 Painéis e posição (cargo hierárquico)
+
+Para **áreas de backoffice** em que o acesso depende de **cargo** (não só de `roles` globais), o `@irondome/core` expõe:
+
+- **`subject.attributes.position`** — string (ex.: `manager`, `staff`). Define no login / JWT.
+- **`PanelPosition`** e **`POSITION_RANK`** — ordem numérica para comparar privilégio.
+- **`getSubjectPosition`**, **`hasMinimumPosition`** — “este utilizador tem pelo menos cargo X?”.
+- **`panelResource(pathname)`** — `Resource` com `type: "panel"` para políticas dedicadas.
+- **`actions.panel.visit` / `actions.panel.manage`** — ações sugeridas para rotas de painel.
+
+Exemplo de policy:
+
+```ts
+import { actions, hasMinimumPosition, type Policy, PanelPosition } from "@irondome/core";
+
+const panelPolicy: Policy = (subject, action, resource) => {
+  if (resource.type !== "panel" || action !== actions.panel.visit) return null;
+  if (resource.id.startsWith("/painel/financeiro")) {
+    return hasMinimumPosition(subject, PanelPosition.manager)
+      ? { allowed: true, reason: "cargo suficiente" }
+      : { allowed: false, reason: "requer manager ou superior" };
+  }
+  return null;
+};
+```
+
 ### 2.6 Integração no Next.js (`@irondome/next`)
 
 | Ferramenta | Quando usar |

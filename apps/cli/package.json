@@ -1,6 +1,6 @@
 {
   "name": "irondome",
-  "version": "0.0.1",
+  "version": "0.0.3",
   "description": "CLI to scaffold Irondome (PBAC/ReBAC) in Next.js projects",
   "license": "MIT",
   "type": "module",
@@ -8,6 +8,17 @@
     "irondome": "./dist/index.js"
   },
   "files": ["dist"],
+  "publishConfig": {
+    "access": "public"
+  },
+  "keywords": [
+    "nextjs",
+    "pbac",
+    "rebac",
+    "authorization",
+    "permissions",
+    "cli"
+  ],
   "scripts": {
     "build": "tsup",
     "check-types": "tsc --noEmit",

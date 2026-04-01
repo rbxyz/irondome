@@ -1,6 +1,6 @@
 {
   "name": "@irondome/core",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Policy-based access control (PBAC) engine for Irondome",
   "license": "MIT",
   "type": "module",
@@ -12,6 +12,17 @@
     }
   },
   "files": ["dist"],
+  "publishConfig": {
+    "access": "public"
+  },
+  "keywords": [
+    "pbac",
+    "authorization",
+    "permissions",
+    "rebac",
+    "policy",
+    "access-control"
+  ],
   "scripts": {
     "build": "tsup",
     "check-types": "tsc --noEmit",

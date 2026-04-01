@@ -137,9 +137,6 @@ importers:
 
   packages/auth:
     dependencies:
-      '@irondome/core':
-        specifier: workspace:*
-        version: link:../core
       bcryptjs:
         specifier: ^2.4.3
         version: 2.4.3
@@ -147,6 +144,9 @@ importers:
         specifier: ^5.10.0
         version: 5.10.0
     devDependencies:
+      '@irondome/core':
+        specifier: workspace:*
+        version: link:../core
       '@repo/eslint-config':
         specifier: workspace:*
         version: link:../eslint-config
@@ -227,14 +227,13 @@ importers:
         version: 8.50.0(eslint@9.39.1)(typescript@5.9.2)
 
   packages/next:
-    dependencies:
+    devDependencies:
       '@irondome/auth':
         specifier: workspace:*
         version: link:../auth
       '@irondome/core':
         specifier: workspace:*
         version: link:../core
-    devDependencies:
       '@repo/eslint-config':
         specifier: workspace:*
         version: link:../eslint-config

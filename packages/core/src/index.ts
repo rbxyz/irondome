@@ -22,6 +22,16 @@ export {
 } from "./catalog.js";
 export type { RoleName } from "./catalog.js";
 
+// Painel / posição (cargo hierárquico)
+export {
+  PanelPosition,
+  POSITION_RANK,
+  getSubjectPosition,
+  hasMinimumPosition,
+  panelResource,
+} from "./panel.js";
+export type { PanelPositionName } from "./panel.js";
+
 // ReBAC
 export {
   checkRelation,
